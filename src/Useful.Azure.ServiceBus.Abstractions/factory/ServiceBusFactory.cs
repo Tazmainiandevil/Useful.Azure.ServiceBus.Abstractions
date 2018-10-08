@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
+﻿using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Azure.ServiceBus.Primitives;
+using System.Threading.Tasks;
 using Useful.Azure.ServiceBus.Abstractions.receiver;
 using Useful.Azure.ServiceBus.Abstractions.sender;
 
@@ -37,13 +37,12 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <returns>A service bus sender</returns>
         public async Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, TransportType transportType, bool canCreateTopic = false) where T : class
         {
-            await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
-
             var builder = new ServiceBusConnectionStringBuilder(connectionString);
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(
                 builder.SasKeyName,
                 builder.SasKey);
 
+            await ConfigureTopicAsync(builder.Endpoint, topicName, canCreateTopic).ConfigureAwait(false);
             var topicClient = new TopicClient(builder.Endpoint, topicName, tokenProvider, transportType);
 
             return new Sender<T>(topicClient);
@@ -79,12 +78,12 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <returns>A service bus sender</returns>
         public async Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, TransportType transportType, bool canCreateQueue = false) where T : class
         {
-            await ConfigureQueueAsync(connectionString, queueName, canCreateQueue).ConfigureAwait(false);
-
             var builder = new ServiceBusConnectionStringBuilder(connectionString);
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(
                 builder.SasKeyName,
                 builder.SasKey);
+
+            await ConfigureQueueAsync(builder.Endpoint, queueName, canCreateQueue).ConfigureAwait(false);
 
             var queueClient = new QueueClient(builder.Endpoint, queueName, tokenProvider, transportType);
 
@@ -109,9 +108,9 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         {
             await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
 
-            var subscriptionClient = new SubscriptionClient(connectionString, topicName, subscriptionName, receiveMode);
-
             await ConfigureSubscriptionAsync(connectionString, topicName, subscriptionName).ConfigureAwait(false);
+
+            var subscriptionClient = new SubscriptionClient(connectionString, topicName, subscriptionName, receiveMode);
 
             return new Receiver<T>(subscriptionClient);
         }
@@ -129,16 +128,16 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         public async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName,
             TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, bool canCreateTopic = false) where T : class
         {
-            await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
-
             var builder = new ServiceBusConnectionStringBuilder(connectionString);
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(
                 builder.SasKeyName,
                 builder.SasKey);
 
-            var subscriptionClient = new SubscriptionClient(connectionString, topicName, subscriptionName, tokenProvider, transportType, receiveMode);
+            await ConfigureTopicAsync(builder.Endpoint, topicName, canCreateTopic).ConfigureAwait(false);
 
             await ConfigureSubscriptionAsync(builder.Endpoint, topicName, subscriptionName).ConfigureAwait(false);
+
+            var subscriptionClient = new SubscriptionClient(builder.Endpoint, topicName, subscriptionName, tokenProvider, transportType, receiveMode);
 
             return new Receiver<T>(subscriptionClient);
         }
