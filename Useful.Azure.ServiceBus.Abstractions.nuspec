@@ -12,8 +12,10 @@
     <tags>tazmainiandevil useful.azure.servicebus servicebus service bus azure</tags>
     <releaseNotes>$releaseNotes$</releaseNotes>
     <dependencies>
-      <dependency id="Microsoft.Azure.ServiceBus" version="3.1.1" />
-      <dependency id="System.Reactive" version="4.1.2" />
+      <group targetFramework="netstandard2.0">
+        <dependency id="Microsoft.Azure.ServiceBus" version="3.1.1" />
+        <dependency id="System.Reactive" version="4.1.2" />
+      </group>
     </dependencies>
   </metadata>
   <files>
