@@ -310,13 +310,11 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// Create a message queue receiver
         /// </summary>
         /// <param name="builder">The connection string builder</param>
-        /// <param name="subscriptionName">The name of the subscription</param>
         /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
         /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
-        public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, string subscriptionName,
-            ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
+        public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
         {
             await ConfigureQueueAsync(builder, canCreateQueue).ConfigureAwait(false);
 
@@ -330,13 +328,11 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// </summary>
         /// <param name="builder">The connection string builder</param>
         /// <param name="tokenProvider"></param>
-        /// <param name="subscriptionName">The name of the subscription</param>
         /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
         /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
-        public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider,
-            string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null,
+        public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null,
             bool canCreateQueue = false) where T : class
         {
             await ConfigureQueueAsync(builder, canCreateQueue).ConfigureAwait(false);
