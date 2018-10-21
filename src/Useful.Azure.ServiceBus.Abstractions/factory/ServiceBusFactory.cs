@@ -215,6 +215,48 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
             return new Receiver<T>(subscriptionClient);
         }
 
+        /// <summary>
+        /// Create a message topic receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        public async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, string subscriptionName,
+            ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
+        {
+            await ConfigureTopicAsync(builder, canCreateTopic).ConfigureAwait(false);
+            await ConfigureSubscriptionAsync(builder, subscriptionName).ConfigureAwait(false);
+
+            var subscriptionClient = new SubscriptionClient(builder, subscriptionName, receiveMode, retryPolicy);
+
+            return new Receiver<T>(subscriptionClient);
+        }
+
+        /// <summary>
+        /// Create a message topic receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider"></param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        public async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider,
+            string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null,
+            bool canCreateTopic = false) where T : class
+        {
+            await ConfigureTopicAsync(builder, canCreateTopic).ConfigureAwait(false);
+            await ConfigureSubscriptionAsync(builder, subscriptionName).ConfigureAwait(false);
+
+            var subscriptionClient = new SubscriptionClient(builder.Endpoint, builder.EntityPath, subscriptionName, tokenProvider, builder.TransportType, receiveMode, retryPolicy);
+
+            return new Receiver<T>(subscriptionClient);
+        }
+
         #endregion Topic Receivers
 
         #region Queue Receivers
@@ -260,6 +302,46 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
                 builder.SasKey);
 
             var queueClient = new QueueClient(builder.Endpoint, queueName, tokenProvider, transportType, receiveMode, retryPolicy);
+
+            return new Receiver<T>(queueClient);
+        }
+
+        /// <summary>
+        /// Create a message queue receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, string subscriptionName,
+            ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
+        {
+            await ConfigureQueueAsync(builder, canCreateQueue).ConfigureAwait(false);
+
+            var queueClient = new QueueClient(builder, receiveMode, retryPolicy);
+
+            return new Receiver<T>(queueClient);
+        }
+
+        /// <summary>
+        /// Create a message queue receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider"></param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider,
+            string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null,
+            bool canCreateQueue = false) where T : class
+        {
+            await ConfigureQueueAsync(builder, canCreateQueue).ConfigureAwait(false);
+
+            var queueClient = new QueueClient(builder.Endpoint, builder.EntityPath, tokenProvider, builder.TransportType, receiveMode, retryPolicy);
 
             return new Receiver<T>(queueClient);
         }
@@ -346,6 +428,17 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
 
             var client = new ManagementClient(connectionString);
             if (!await client.SubscriptionExistsAsync(topicName, subscriptionName).ConfigureAwait(false))
+            {
+                await client.CreateSubscriptionAsync(subscriptionDescription).ConfigureAwait(false);
+            }
+        }
+
+        private static async Task ConfigureSubscriptionAsync(ServiceBusConnectionStringBuilder builder, string subscriptionName)
+        {
+            var subscriptionDescription = new SubscriptionDescription(builder.EntityPath, subscriptionName);
+
+            var client = new ManagementClient(builder.GetNamespaceConnectionString());
+            if (!await client.SubscriptionExistsAsync(builder.EntityPath, subscriptionName).ConfigureAwait(false))
             {
                 await client.CreateSubscriptionAsync(subscriptionDescription).ConfigureAwait(false);
             }

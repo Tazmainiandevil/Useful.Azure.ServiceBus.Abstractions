@@ -120,6 +120,29 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName, TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
 
         /// <summary>
+        /// Create a message topic receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+        
+        /// <summary>
+        /// Create a message topic receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider"></param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+
+        /// <summary>
         /// Create a message queue receiver
         /// </summary>
         /// <param name="connectionString">The connection string</param>
@@ -141,6 +164,29 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
         Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+
+        /// <summary>
+        /// Create a message queue receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+
+        /// <summary>
+        /// Create a message queue receiver
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider"></param>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus receiver</returns>
+        Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
 
         #endregion Receivers
     }
