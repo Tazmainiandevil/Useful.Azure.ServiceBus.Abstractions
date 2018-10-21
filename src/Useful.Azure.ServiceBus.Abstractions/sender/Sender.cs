@@ -31,14 +31,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.sender
         /// <param name="data">The data to send</param>
         public async Task SendAsJsonAsync(T data)
         {
-            var bytes = GetDataAsBytes(data);
-            
-            var message = new Message(bytes)
-            {
-                ContentType = JsonContentType
-            };
-
-            await _client.SendAsync(message).ConfigureAwait(false);
+            await SendAsJsonAsync(data, TimeSpan.Zero, DateTime.MinValue).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -48,33 +41,30 @@ namespace Useful.Azure.ServiceBus.Abstractions.sender
         /// <param name="scheduledEnqueueTimeUtc">Gets or sets the date and time in UTC at which the message will be enqueued. Message enqueuing time does not mean that the message will be sent at the same time</param>
         public async Task SendAsJsonAsync(T data, DateTime scheduledEnqueueTimeUtc)
         {
-            var bytes = GetDataAsBytes(data);
-
-            var message = new Message(bytes)
-            {
-                ContentType = JsonContentType,
-                ScheduledEnqueueTimeUtc = scheduledEnqueueTimeUtc
-            };
-
-            await _client.SendAsync(message).ConfigureAwait(false);
+            await SendAsJsonAsync(data, TimeSpan.Zero, scheduledEnqueueTimeUtc).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Send message of type T as a json string
         /// </summary>
         /// <param name="data">The data to send</param>
-        /// <param name="scheduleIn">How far in the future to enqueue the message</param>
-        public async Task SendAsJsonAsync(T data, TimeSpan scheduleIn)
+        /// <param name="timeToLive">How far in the future should the message expire</param>
+        public async Task SendAsJsonAsync(T data, TimeSpan timeToLive)
         {
-            if (scheduleIn > TimeSpan.Zero)
-            {
-                var scheduledEnqueueTimeUtc = DateTime.UtcNow + scheduleIn;
-                await SendAsJsonAsync(data, scheduledEnqueueTimeUtc).ConfigureAwait(false);
-            }
-            else
-            {
-                await SendAsJsonAsync(data).ConfigureAwait(false);
-            }
+            await SendAsJsonAsync(data, timeToLive, DateTime.MinValue).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Send message of type T as a json string
+        /// </summary>
+        /// <param name="data">The data to send</param>
+        /// <param name="timeToLive">How far in the future should the message expire</param>
+        /// <param name="scheduledEnqueueTimeUtc">Gets or sets the date and time in UTC at which the message will be enqueued. Message enqueuing time does not mean that the message will be sent at the same time</param>
+        public async Task SendAsJsonAsync(T data, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc)
+        {
+            var message = CreateMessage(data, timeToLive, scheduledEnqueueTimeUtc);
+
+            await _client.SendAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -83,17 +73,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.sender
         /// <param name="dataList">The data to send</param>
         public async Task SendAsJsonAsync(IList<T> dataList)
         {
-            if (dataList == null || !dataList.Any())
-            {
-                DataListNullOrEmptyExceptionMessage = "The data list to send cannot be null or empty";
-                throw new ArgumentException(DataListNullOrEmptyExceptionMessage, nameof(dataList));
-            }
-
-            var messages = (from message in dataList
-                            select GetDataAsBytes(message) into bytes
-                            select new Message(bytes) { ContentType = JsonContentType }).ToList();
-
-            await _client.SendAsync(messages).ConfigureAwait(false);
+            await SendAsJsonAsync(dataList, TimeSpan.Zero, DateTime.MinValue).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -103,36 +83,40 @@ namespace Useful.Azure.ServiceBus.Abstractions.sender
         /// <param name="scheduledEnqueueTimeUtc">Gets or sets the date and time in UTC at which the message will be enqueued</param>
         public async Task SendAsJsonAsync(IList<T> dataList, DateTime scheduledEnqueueTimeUtc)
         {
-            if (dataList == null || !dataList.Any())
-            {
-                throw new ArgumentException(DataListNullOrEmptyExceptionMessage, nameof(dataList));
-            }
-
-            var messages = (from message in dataList
-                            select GetDataAsBytes(message) into bytes
-                            select new Message(bytes) { ContentType = JsonContentType, ScheduledEnqueueTimeUtc = scheduledEnqueueTimeUtc })
-                            .ToList();
-
-            await _client.SendAsync(messages).ConfigureAwait(false);
+            await SendAsJsonAsync(dataList, TimeSpan.Zero, scheduledEnqueueTimeUtc).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Send a list of messages of type T as json strings
         /// </summary>
         /// <param name="dataList">The data to send</param>
-        /// <param name="scheduleIn">How far in the future to enqueue the messages</param>
-        public async Task SendAsJsonAsync(IList<T> dataList, TimeSpan scheduleIn)
+        /// <param name="timeToLive">How far in the future should the message expire</param>
+        public async Task SendAsJsonAsync(IList<T> dataList, TimeSpan timeToLive)
         {
-            if (scheduleIn > TimeSpan.Zero)
+            await SendAsJsonAsync(dataList, timeToLive, DateTime.MinValue).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Send a list of messages of type T as json strings
+        /// </summary>
+        /// <param name="dataList">The data to send</param>
+        /// <param name="timeToLive">How far in the future should the message expire</param>
+        /// <param name="scheduledEnqueueTimeUtc">Gets or sets the date and time in UTC at which the message will be enqueued. Message enqueuing time does not mean that the message will be sent at the same time</param>
+        public async Task SendAsJsonAsync(IList<T> dataList, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc)
+        {
+            if (dataList == null || !dataList.Any())
             {
-                var scheduledEnqueueTimeUtc = DateTime.UtcNow + scheduleIn;
-                await SendAsJsonAsync(dataList, scheduledEnqueueTimeUtc).ConfigureAwait(false);
+                throw new ArgumentException(DataListNullOrEmptyExceptionMessage, nameof(dataList));
             }
-            else
-            {
-                await SendAsJsonAsync(dataList).ConfigureAwait(false);
-            }
-        }        
+
+            var messages = (from message in dataList
+                            select CreateMessage(message, timeToLive, scheduledEnqueueTimeUtc))
+                            .ToList();
+
+            await _client.SendAsync(messages).ConfigureAwait(false);
+        }
+
+        #region Helpers
 
         private byte[] GetDataAsBytes(T data)
         {
@@ -140,5 +124,25 @@ namespace Useful.Azure.ServiceBus.Abstractions.sender
             var bytes = Encoding.UTF8.GetBytes(json);
             return bytes;
         }
+
+        private Message CreateMessage(T data, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc)
+        {
+            var bytes = GetDataAsBytes(data);
+            var message = new Message(bytes) { ContentType = JsonContentType };
+
+            if (timeToLive > TimeSpan.Zero)
+            {
+                message.TimeToLive = timeToLive;
+            }
+
+            if (scheduledEnqueueTimeUtc > DateTime.MinValue)
+            {
+                message.ScheduledEnqueueTimeUtc = scheduledEnqueueTimeUtc;
+            }
+
+            return message;
+        }
+
+        #endregion Helpers
     }
 }
