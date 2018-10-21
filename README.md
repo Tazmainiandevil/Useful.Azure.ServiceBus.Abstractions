@@ -2,6 +2,8 @@
 
 Azure Service Bus Wrapper in C# to help manage and use the Service Bus for sending messages as JSON. Uses the .NET Standard 2.0 version of the service bus libraries.
 
+<a href="https://badge.fury.io/nu/Useful.Azure.ServiceBus.Abstractions"><img src="https://badge.fury.io/nu/Useful.Azure.ServiceBus.Abstractions.svg" alt="NuGet version" height="18"></a>
+
 ## Usage
 
 To create a topic/queue sender or receiver, create an instance of the factory and then create a sender or receiver from that.
