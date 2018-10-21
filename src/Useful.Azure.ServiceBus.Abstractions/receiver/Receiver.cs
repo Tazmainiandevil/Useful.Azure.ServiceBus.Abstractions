@@ -26,18 +26,19 @@ namespace Useful.Azure.ServiceBus.Abstractions.receiver
         /// Receive messages
         /// </summary>
         /// <param name="exceptionHandler">The exception handler for exposing any exceptions that happen during receive</param>
+        /// <param name="maxConcurrentCalls">Gets or sets the maximum number of concurrent calls to the callback the message pump should initiate. Default is 1</param>
         /// <returns>An observable of type T</returns>
-        public IObservable<T> Receive(Func<ExceptionReceivedEventArgs, Task> exceptionHandler)
+        public IObservable<T> Receive(Func<ExceptionReceivedEventArgs, Task> exceptionHandler, int maxConcurrentCalls = 1)
         {
             var ob = Observable.Create<T>(o =>
             {
                 _client.RegisterMessageHandler(async (message, token) =>
                 {
                     var data = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(message.Body));
+                    o.OnNext(data);
 
                     await _client.CompleteAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
-                    o.OnNext(data);
-                }, new MessageHandlerOptions(exceptionHandler) { AutoComplete = false, MaxConcurrentCalls = 1 });
+                }, new MessageHandlerOptions(exceptionHandler) { AutoComplete = false, MaxConcurrentCalls = maxConcurrentCalls });
 
                 return Disposable.Empty;
             });
