@@ -16,13 +16,14 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// </summary>
         /// <param name="connectionString">The connection string</param>
         /// <param name="topicName">The name of the topic</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
-        public async Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, bool canCreateTopic = false) where T : class
+        public async Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
         {
             await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
 
-            var topicClient = new TopicClient(connectionString, topicName);
+            var topicClient = new TopicClient(connectionString, topicName, retryPolicy);
 
             return new Sender<T>(topicClient);
         }
@@ -33,9 +34,10 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="connectionString">The connection string</param>
         /// <param name="topicName">The name of the topic</param>
         /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
-        public async Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, TransportType transportType, bool canCreateTopic = false) where T : class
+        public async Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
         {
             await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
 
@@ -58,13 +60,14 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// </summary>
         /// <param name="connectionString">The connection string</param>
         /// <param name="queueName">The name of the queue</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateQueue">A boolean denoting if queue should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
-        public async Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, bool canCreateQueue = false) where T : class
+        public async Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
         {
             await ConfigureQueueAsync(connectionString, queueName, canCreateQueue).ConfigureAwait(false);
 
-            var queueClient = new QueueClient(connectionString, queueName);
+            var queueClient = new QueueClient(connectionString, queueName, ReceiveMode.PeekLock, retryPolicy);
 
             return new Sender<T>(queueClient);
         }
@@ -75,9 +78,10 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="connectionString">The connection string</param>
         /// <param name="queueName">The name of the queue</param>
         /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
-        public async Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, TransportType transportType, bool canCreateQueue = false) where T : class
+        public async Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
         {
             await ConfigureQueueAsync(connectionString, queueName, canCreateQueue).ConfigureAwait(false);
 
@@ -86,7 +90,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
                 builder.SasKeyName,
                 builder.SasKey);
 
-            var queueClient = new QueueClient(builder.Endpoint, queueName, tokenProvider, transportType);
+            var queueClient = new QueueClient(builder.Endpoint, queueName, tokenProvider, transportType, ReceiveMode.PeekLock, retryPolicy);
 
             return new Sender<T>(queueClient);
         }
@@ -102,16 +106,17 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="topicName">The name of the topic</param>
         /// <param name="subscriptionName">The name of the subscription</param>
         /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
         public async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName,
-            ReceiveMode receiveMode = ReceiveMode.PeekLock, bool canCreateTopic = false) where T : class
+            ReceiveMode receiveMode = ReceiveMode.PeekLock,  RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
         {
             await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
 
             await ConfigureSubscriptionAsync(connectionString, topicName, subscriptionName).ConfigureAwait(false);
 
-            var subscriptionClient = new SubscriptionClient(connectionString, topicName, subscriptionName, receiveMode);
+            var subscriptionClient = new SubscriptionClient(connectionString, topicName, subscriptionName, receiveMode, retryPolicy);
 
             return new Receiver<T>(subscriptionClient);
         }
@@ -124,10 +129,11 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="subscriptionName">The name of the subscription</param>
         /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
         /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
         public async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName,
-            TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, bool canCreateTopic = false) where T : class
+            TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
         {
             await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
 
@@ -138,7 +144,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
                 builder.SasKeyName,
                 builder.SasKey);
 
-            var subscriptionClient = new SubscriptionClient(builder.Endpoint, topicName, subscriptionName, tokenProvider, transportType, receiveMode);
+            var subscriptionClient = new SubscriptionClient(builder.Endpoint, topicName, subscriptionName, tokenProvider, transportType, receiveMode, retryPolicy);
 
             return new Receiver<T>(subscriptionClient);
         }
@@ -153,14 +159,15 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="connectionString">The connection string</param>
         /// <param name="queueName">The name of the queue</param>
         /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
         public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName,
-            ReceiveMode receiveMode = ReceiveMode.PeekLock, bool canCreateQueue = false) where T : class
+            ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
         {
             await ConfigureQueueAsync(connectionString, queueName, canCreateQueue).ConfigureAwait(false);
 
-            var queueClient = new QueueClient(connectionString, queueName, receiveMode);
+            var queueClient = new QueueClient(connectionString, queueName, receiveMode, retryPolicy);
 
             return new Receiver<T>(queueClient);
         }
@@ -172,10 +179,11 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="queueName">The name of the queue</param>
         /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
         /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
+        /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
         public async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName,
-            TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, bool canCreateQueue = false)
+            TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false)
             where T : class
         {
             await ConfigureQueueAsync(connectionString, queueName, canCreateQueue).ConfigureAwait(false);
@@ -185,7 +193,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
                 builder.SasKeyName,
                 builder.SasKey);
 
-            var queueClient = new QueueClient(builder.Endpoint, queueName, tokenProvider, transportType, receiveMode);
+            var queueClient = new QueueClient(builder.Endpoint, queueName, tokenProvider, transportType, receiveMode, retryPolicy);
 
             return new Receiver<T>(queueClient);
         }
