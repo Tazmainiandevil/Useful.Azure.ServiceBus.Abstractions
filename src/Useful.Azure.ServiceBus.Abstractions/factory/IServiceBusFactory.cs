@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
+﻿using Microsoft.Azure.ServiceBus;
+using System.Threading.Tasks;
+using Microsoft.Azure.ServiceBus.Primitives;
 using Useful.Azure.ServiceBus.Abstractions.receiver;
 using Useful.Azure.ServiceBus.Abstractions.sender;
 
@@ -17,7 +18,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="retryPolicy">The retry policy</param>
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;      
+        Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
 
         /// <summary>
         /// Create a message topic sender
@@ -29,6 +30,25 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
         Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+
+        /// <summary>
+        /// Create a message topic sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus sender</returns>
+        Task<ISender<T>> CreateTopicSenderAsync<T>(ServiceBusConnectionStringBuilder builder, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+
+        /// <summary>
+        /// Create a message topic sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider">The token provider</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus sender</returns>
+        Task<ISender<T>> CreateTopicSenderAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
 
         /// <summary>
         /// Create a message queue sender

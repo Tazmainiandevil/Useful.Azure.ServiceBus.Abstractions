@@ -39,15 +39,46 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <returns>A service bus sender</returns>
         public async Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
         {
-            await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
-
-            var builder = new ServiceBusConnectionStringBuilder(connectionString);
+            var builder = new ServiceBusConnectionStringBuilder(connectionString) { EntityPath = topicName };
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(
                 builder.SasKeyName,
                 builder.SasKey);
 
+            await ConfigureTopicAsync(builder, canCreateTopic).ConfigureAwait(false);
+
             var topicClient = new TopicClient(builder.Endpoint, topicName, tokenProvider, transportType);
 
+            return new Sender<T>(topicClient);
+        }
+
+        /// <summary>
+        /// Create a message topic sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus sender</returns>
+        public async Task<ISender<T>> CreateTopicSenderAsync<T>(ServiceBusConnectionStringBuilder builder, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
+        {
+            await ConfigureTopicAsync(builder, canCreateTopic).ConfigureAwait(false);
+
+            var topicClient = new TopicClient(builder, retryPolicy);
+            return new Sender<T>(topicClient);
+        }
+
+        /// <summary>
+        /// Create a message topic sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider">The token provider</param>
+        /// <param name="retryPolicy">The retry policy</param>
+        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
+        /// <returns>A service bus sender</returns>
+        public async Task<ISender<T>> CreateTopicSenderAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
+        {
+            await ConfigureTopicAsync(builder, canCreateTopic).ConfigureAwait(false);
+
+            var topicClient = new TopicClient(builder.Endpoint, builder.EntityPath, tokenProvider, builder.TransportType, retryPolicy);
             return new Sender<T>(topicClient);
         }
 
@@ -110,7 +141,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus receiver</returns>
         public async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName,
-            ReceiveMode receiveMode = ReceiveMode.PeekLock,  RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
+            ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class
         {
             await ConfigureTopicAsync(connectionString, topicName, canCreateTopic).ConfigureAwait(false);
 
@@ -214,6 +245,24 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
 
                 var client = new ManagementClient(connectionString);
                 if (!await client.TopicExistsAsync(topic).ConfigureAwait(false))
+                {
+                    await client.CreateTopicAsync(topicDescription).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private static async Task ConfigureTopicAsync(ServiceBusConnectionStringBuilder builder, bool canCreateTopic)
+        {
+            if (canCreateTopic)
+            {
+                var topicDescription = new TopicDescription(builder.EntityPath)
+                {
+                    EnableBatchedOperations = true,
+                    EnablePartitioning = true
+                };
+
+                var client = new ManagementClient(builder.GetNamespaceConnectionString());
+                if (!await client.TopicExistsAsync(builder.EntityPath).ConfigureAwait(false))
                 {
                     await client.CreateTopicAsync(topicDescription).ConfigureAwait(false);
                 }
