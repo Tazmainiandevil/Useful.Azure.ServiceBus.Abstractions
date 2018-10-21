@@ -10,6 +10,8 @@ To create a topic/queue sender or receiver, create an instance of the factory an
 
 Each of the factory methods support creation of the queue or topic as well as transport type, receive mode and retry policy.
 
+__NOTE__ : In order to use the create of the queue or topic the connection string must have mange rights.
+
 ### Topics
 
 #### Basic Topic Sender
