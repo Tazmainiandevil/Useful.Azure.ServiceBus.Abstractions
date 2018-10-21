@@ -126,6 +126,41 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
             return new Sender<T>(queueClient);
         }
 
+        /// <summary>
+        /// Create a message queue sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="retryPolicy"></param>
+        /// <param name="canCreateQueue"></param>
+        /// <returns>A service bus sender</returns>
+        public async Task<ISender<T>> CreateQueueSenderAsync<T>(ServiceBusConnectionStringBuilder builder, RetryPolicy retryPolicy = null,
+            bool canCreateQueue = false) where T : class
+        {
+            await ConfigureQueueAsync(builder, canCreateQueue).ConfigureAwait(false);
+
+            var queueClient = new QueueClient(builder.Endpoint, builder.EntityPath, ReceiveMode.PeekLock, retryPolicy);
+
+            return new Sender<T>(queueClient);
+        }
+
+        /// <summary>
+        /// Create a message queue sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider">The token provider</param>
+        /// <param name="retryPolicy"></param>
+        /// <param name="canCreateQueue"></param>
+        /// <returns>A service bus sender</returns>
+        public async Task<ISender<T>> CreateQueueSenderAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider,
+            RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class
+        {
+            await ConfigureQueueAsync(builder, canCreateQueue).ConfigureAwait(false);
+
+            var queueClient = new QueueClient(builder.Endpoint, builder.EntityPath, tokenProvider, builder.TransportType, ReceiveMode.PeekLock, retryPolicy);
+
+            return new Sender<T>(queueClient);
+        }
+
         #endregion Queue Senders
 
         #region Topic Receivers
@@ -281,6 +316,24 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
 
                 var client = new ManagementClient(connectionString);
                 if (!await client.QueueExistsAsync(queue).ConfigureAwait(false))
+                {
+                    await client.CreateQueueAsync(queueDescription).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private static async Task ConfigureQueueAsync(ServiceBusConnectionStringBuilder builder, bool canCreateQueue)
+        {
+            if (canCreateQueue)
+            {
+                var queueDescription = new QueueDescription(builder.EntityPath)
+                {
+                    EnableBatchedOperations = true,
+                    EnablePartitioning = true
+                };
+
+                var client = new ManagementClient(builder.GetNamespaceConnectionString());
+                if (!await client.QueueExistsAsync(builder.EntityPath).ConfigureAwait(false))
                 {
                     await client.CreateQueueAsync(queueDescription).ConfigureAwait(false);
                 }

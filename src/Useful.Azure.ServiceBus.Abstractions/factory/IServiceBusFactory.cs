@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.ServiceBus;
-using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus.Primitives;
+using System.Threading.Tasks;
 using Useful.Azure.ServiceBus.Abstractions.receiver;
 using Useful.Azure.ServiceBus.Abstractions.sender;
 
@@ -70,6 +70,25 @@ namespace Useful.Azure.ServiceBus.Abstractions.factory
         /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
         /// <returns>A service bus sender</returns>
         Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+
+        /// <summary>
+        /// Create a message queue sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="retryPolicy"></param>
+        /// <param name="canCreateQueue"></param>
+        /// <returns>A service bus sender</returns>
+        Task<ISender<T>> CreateQueueSenderAsync<T>(ServiceBusConnectionStringBuilder builder, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+
+        /// <summary>
+        /// Create a message queue sender
+        /// </summary>
+        /// <param name="builder">The connection string builder</param>
+        /// <param name="tokenProvider">The token provider</param>
+        /// <param name="retryPolicy"></param>
+        /// <param name="canCreateQueue"></param>
+        /// <returns>A service bus sender</returns>
+        Task<ISender<T>> CreateQueueSenderAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
 
         #endregion Senders
 
