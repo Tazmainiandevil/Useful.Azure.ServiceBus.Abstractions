@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>$author$</authors>
     <owners>$owners$</owners>
-    <licenseUrl>https://raw.githubusercontent.com/Tazmainiandevil/Useful.Azure.ServiceBus.Abstractions/master/LICENSE</licenseUrl>
+    <license type="file">LICENSE.txt</license>    
     <projectUrl>https://github.com/Tazmainiandevil/Useful.Azure.ServiceBus.Abstractions</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
@@ -13,12 +13,13 @@
     <releaseNotes>$releaseNotes$</releaseNotes>
     <dependencies>
       <group targetFramework="netstandard2.0">
-        <dependency id="Microsoft.Azure.ServiceBus" version="3.1.1" />
+        <dependency id="Microsoft.Azure.ServiceBus" version="3.2.1" />
         <dependency id="System.Reactive" version="4.1.2" />
       </group>
     </dependencies>
   </metadata>
   <files>
+    <file src="LICENSE.txt" target="" />
     <file src="src\Useful.Azure.ServiceBus.Abstractions\bin\Release\netstandard2.0\Useful.Azure.ServiceBus.Abstractions.dll" target="lib\netstandard2.0\Useful.Azure.ServiceBus.Abstractions.dll" />
   </files>
 </package>
