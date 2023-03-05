@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 
 namespace Useful.Azure.ServiceBus.Abstractions.receiver
 {
-    public class Receiver<T> : IAsyncDisposable, IReceiver<T> where T : class
+    public class Receiver<T> : IReceiver<T> where T : class
     {
         private ServiceBusProcessor _client;
 
@@ -11,7 +11,7 @@ namespace Useful.Azure.ServiceBus.Abstractions.receiver
         /// Constructor
         /// </summary>
         /// <param name="client">The receiver client</param>
-        public Receiver(ServiceBusProcessor client)
+        internal Receiver(ServiceBusProcessor client)
         {
             _client = client;
         }
@@ -39,9 +39,34 @@ namespace Useful.Azure.ServiceBus.Abstractions.receiver
         }
 
         /// <summary>
+        /// Dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+
+            (_client as IDisposable)?.Dispose();
+            _client = null;
+        }
+
+        /// <summary>
         /// Dispose of resources asynchronously
         /// </summary>
         public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+
+            Dispose(disposing: false);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual async ValueTask DisposeAsyncCore()
         {
             if (_client is not null)
             {

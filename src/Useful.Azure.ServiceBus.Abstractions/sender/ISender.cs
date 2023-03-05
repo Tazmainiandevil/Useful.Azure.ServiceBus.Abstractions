@@ -1,6 +1,6 @@
 ﻿namespace Useful.Azure.ServiceBus.Abstractions.sender;
 
-public interface ISender<T>
+public interface ISender<T> : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Send message of type T as a json string

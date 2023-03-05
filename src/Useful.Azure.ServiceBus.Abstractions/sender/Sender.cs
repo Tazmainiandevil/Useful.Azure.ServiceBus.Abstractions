@@ -1,6 +1,6 @@
 ﻿namespace Useful.Azure.ServiceBus.Abstractions.sender;
 
-public class Sender<T> : IAsyncDisposable, ISender<T> where T : class
+public class Sender<T> : ISender<T> where T : class
 {
     private ServiceBusSender _client;
 
@@ -8,7 +8,7 @@ public class Sender<T> : IAsyncDisposable, ISender<T> where T : class
     /// Constructor
     /// </summary>
     /// <param name="client">The sender client</param>
-    public Sender(ServiceBusSender client)
+    internal Sender(ServiceBusSender client)
     {
         _client = client;
     }
@@ -79,9 +79,34 @@ public class Sender<T> : IAsyncDisposable, ISender<T> where T : class
     }
 
     /// <summary>
+    /// Dispose of resources
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposing) return;
+
+        (_client as IDisposable)?.Dispose();
+        _client = null;
+    }
+
+    /// <summary>
     /// Dispose of resources asynchronously
     /// </summary>
     public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore().ConfigureAwait(false);
+
+        Dispose(disposing: false);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsyncCore()
     {
         if (_client is not null)
         {

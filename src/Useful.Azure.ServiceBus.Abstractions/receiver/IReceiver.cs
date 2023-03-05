@@ -1,6 +1,6 @@
 ﻿namespace Useful.Azure.ServiceBus.Abstractions.receiver
 {
-    public interface IReceiver<out T>
+    public interface IReceiver<out T> : IDisposable, IAsyncDisposable
     {
         /// <summary>
         /// Receive messages
