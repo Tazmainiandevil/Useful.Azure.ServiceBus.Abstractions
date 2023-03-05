@@ -96,9 +96,9 @@ Then to listen for incoming messages e.g.
 __NOTE__ : The receive method takes an exception func<> to provide feedback and returns an IObservable to get messages
 
 ```csharp
-var observer = receiver.Receive(exception =>
+var observer = receiver.Receive(args =>
 {
-    Console.WriteLine(exception.Exception.Message);
+    Console.WriteLine(args.Exception.Message);
     return Task.CompletedTask;
 });
 ```
@@ -182,9 +182,9 @@ builder.Services.AddSingleton(receiver);
 Example
 
 ```csharp
-var observer = receiver.Receive(exception =>
+var observer = receiver.Receive(args =>
 {
-    Console.WriteLine(exception.Exception.Message);
+    Console.WriteLine(args.Exception.Message);
     return Task.CompletedTask;
 });
 
@@ -194,15 +194,17 @@ observer.Subscribe(x => Console.WriteLine($"From Topic {x.Name}"));
 Example with Methods
 
 ```csharp
+var observer = receiver.Receive(ExceptionHandler);
+observer.Subscribe(IncomingMessage);
 
-private void OnNext(MyMessage obj)
+private void IncomingMessage(MyMessage message)
 {
-    Console.WriteLine($"From Topic {x.Name}")
+    Console.WriteLine($"From Topic {message.Name}")
 }
 
-private Task ExceptionHandler(ProcessErrorEventArgs arg)
+private Task ExceptionHandler(ProcessErrorEventArgs args)
 {
-    Console.WriteLine(exception.Exception.Message);
+    Console.WriteLine(args.Exception.Message);
     return Task.CompletedTask;
 }
 ```
