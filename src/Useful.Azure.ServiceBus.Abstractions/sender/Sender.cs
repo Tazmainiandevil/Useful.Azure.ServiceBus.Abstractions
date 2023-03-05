@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Useful.Azure.ServiceBus.Abstractions.sender;
+﻿namespace Useful.Azure.ServiceBus.Abstractions.sender;
 
 public class Sender<T> : IAsyncDisposable, ISender<T> where T : class
 {
@@ -16,54 +14,73 @@ public class Sender<T> : IAsyncDisposable, ISender<T> where T : class
     }
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(T data) => SendAsJsonAsync(data, TimeSpan.Zero, DateTime.MinValue);
+    public Task SendAsJsonAsync(T data, CancellationToken cancellationToken = default) =>
+        SendAsJsonAsync(data, TimeSpan.Zero, DateTime.MinValue, cancellationToken);
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(T data, DateTime scheduledEnqueueTimeUtc) => SendAsJsonAsync(data, TimeSpan.Zero, scheduledEnqueueTimeUtc);
+    public Task SendAsJsonAsync(T data, DateTime scheduledEnqueueTimeUtc, CancellationToken cancellationToken = default) =>
+        SendAsJsonAsync(data, TimeSpan.Zero, scheduledEnqueueTimeUtc, cancellationToken);
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(T data, TimeSpan timeToLive) => SendAsJsonAsync(data, timeToLive, DateTime.MinValue);
+    public Task SendAsJsonAsync(T data, TimeSpan timeToLive, CancellationToken cancellationToken = default) =>
+        SendAsJsonAsync(data, timeToLive, DateTime.MinValue, cancellationToken);
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(T data, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc)
+    public Task SendAsJsonAsync(T data, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc, CancellationToken cancellationToken = default)
     {
         var message = CreateMessage(data, timeToLive, scheduledEnqueueTimeUtc);
 
-        return _client.SendMessageAsync(message);
+        return _client.SendMessageAsync(message, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(IList<T> dataList) => SendAsJsonAsync(dataList, TimeSpan.Zero, DateTime.MinValue);
+    public Task SendAsJsonAsync(IList<T> dataList, CancellationToken cancellationToken = default) => SendAsJsonAsync(dataList, TimeSpan.Zero, DateTime.MinValue, cancellationToken);
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(IList<T> dataList, DateTime scheduledEnqueueTimeUtc)
-    => SendAsJsonAsync(dataList, TimeSpan.Zero, scheduledEnqueueTimeUtc);
+    public Task SendAsJsonAsync(IList<T> dataList, DateTime scheduledEnqueueTimeUtc, CancellationToken cancellationToken = default)
+    => SendAsJsonAsync(dataList, TimeSpan.Zero, scheduledEnqueueTimeUtc, cancellationToken);
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(IList<T> dataList, TimeSpan timeToLive)
-    => SendAsJsonAsync(dataList, timeToLive, DateTime.MinValue);
+    public Task SendAsJsonAsync(IList<T> dataList, TimeSpan timeToLive, CancellationToken cancellationToken = default)
+    => SendAsJsonAsync(dataList, timeToLive, DateTime.MinValue, cancellationToken);
 
     /// <inheritdoc/>
-    public Task SendAsJsonAsync(IList<T> dataList, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc)
+    public Task SendAsJsonAsync(IList<T> dataList, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc, CancellationToken cancellationToken = default)
     {
         var messages = (from message in dataList
                         select CreateMessage(message, timeToLive, scheduledEnqueueTimeUtc));
 
-        return _client.SendMessagesAsync(messages);
+        return _client.SendMessagesAsync(messages, cancellationToken);
     }
 
+    /// <summary>
+    /// Create a Service Bus message
+    /// </summary>
+    /// <param name="data">The data to send</param>
+    /// <param name="timeToLive">How far in the future should the message expire</param>
+    /// <param name="scheduledEnqueueTimeUtc">Gets or sets the date and time in UTC at which the message will be en-queued. Message en-queuing time does not mean that the message will be sent at the same time</param>
+    /// <returns></returns>
     private static ServiceBusMessage CreateMessage(T data, TimeSpan timeToLive, DateTime scheduledEnqueueTimeUtc)
     {
         var dataString = JsonSerializer.Serialize(data);
-        var message = new ServiceBusMessage(dataString)
+        var message = new ServiceBusMessage(dataString);
+
+        if (scheduledEnqueueTimeUtc > DateTime.MinValue)
         {
-            ScheduledEnqueueTime = scheduledEnqueueTimeUtc,
-            TimeToLive = timeToLive
-        };
+            message.ScheduledEnqueueTime = scheduledEnqueueTimeUtc;
+        }
+
+        if (timeToLive > TimeSpan.Zero)
+        {
+            message.TimeToLive = timeToLive;
+        }
 
         return message;
     }
 
+    /// <summary>
+    /// Dispose of resources asynchronously
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         if (_client is not null)

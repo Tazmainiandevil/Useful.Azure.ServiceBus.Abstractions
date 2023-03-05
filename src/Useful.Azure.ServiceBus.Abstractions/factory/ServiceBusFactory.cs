@@ -10,11 +10,13 @@ public class ServiceBusFactory : IServiceBusFactory
 {
     #region Receiver ConnectionString
 
-    public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName) where T : class
-        => CreateTopicReceiverAsync<T>(connectionString, topicName, subscriptionName, new ReceiverOptions());
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName, CancellationToken cancellationToken = default) where T : class
+        => CreateTopicReceiverAsync<T>(connectionString, topicName, subscriptionName, new ReceiverOptions(), cancellationToken);
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName,
-        ReceiverOptions receiverOptions) where T : class
+        ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(connectionString);
         ArgumentNullException.ThrowIfNull(topicName);
@@ -25,13 +27,15 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(connectionString);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(connectionString) : null;
 
-        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions);
+        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
     }
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName) where T : class
-        => CreateQueueReceiverAsync<T>(connectionString, queueName, new ReceiverOptions());
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, CancellationToken cancellationToken = default) where T : class
+        => CreateQueueReceiverAsync<T>(connectionString, queueName, new ReceiverOptions(), cancellationToken);
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, ReceiverOptions receiverOptions) where T : class
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(connectionString);
         ArgumentNullException.ThrowIfNull(queueName);
@@ -41,19 +45,21 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(connectionString);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(connectionString) : null;
 
-        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions);
+        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
     }
 
     #endregion Receiver ConnectionString
 
     #region Receiver AzureNamedKeyCredential
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string topicName,
-        string subscriptionName) where T : class =>
-        CreateTopicReceiverAsync<T>(fullyQualifiedNamespace, credential, topicName, subscriptionName, new ReceiverOptions());
+        string subscriptionName, CancellationToken cancellationToken = default) where T : class =>
+        CreateTopicReceiverAsync<T>(fullyQualifiedNamespace, credential, topicName, subscriptionName, new ReceiverOptions(), cancellationToken);
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string topicName,
-        string subscriptionName, ReceiverOptions receiverOptions) where T : class
+        string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
         ArgumentNullException.ThrowIfNull(credential);
@@ -65,13 +71,15 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
-        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions);
+        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
     }
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName) where T : class
-        => CreateQueueReceiverAsync<T>(fullyQualifiedNamespace, credential, queueName, new ReceiverOptions());
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName, CancellationToken cancellationToken = default) where T : class
+        => CreateQueueReceiverAsync<T>(fullyQualifiedNamespace, credential, queueName, new ReceiverOptions(), cancellationToken);
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName, ReceiverOptions receiverOptions) where T : class
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
         ArgumentNullException.ThrowIfNull(credential);
@@ -82,19 +90,21 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
-        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions);
+        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
     }
 
     #endregion Receiver AzureNamedKeyCredential
 
     #region Receiver TokenCredential
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string topicName,
-        string subscriptionName) where T : class =>
-        CreateTopicReceiverAsync<T>(fullyQualifiedNamespace, credential, topicName, subscriptionName, new ReceiverOptions());
+        string subscriptionName, CancellationToken cancellationToken = default) where T : class =>
+        CreateTopicReceiverAsync<T>(fullyQualifiedNamespace, credential, topicName, subscriptionName, new ReceiverOptions(), cancellationToken);
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string topicName,
-        string subscriptionName, ReceiverOptions receiverOptions) where T : class
+        string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
         ArgumentNullException.ThrowIfNull(credential);
@@ -106,13 +116,15 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
-        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions);
+        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
     }
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName) where T : class
-    => CreateQueueReceiverAsync<T>(fullyQualifiedNamespace, credential, queueName, new ReceiverOptions());
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName, CancellationToken cancellationToken = default) where T : class
+    => CreateQueueReceiverAsync<T>(fullyQualifiedNamespace, credential, queueName, new ReceiverOptions(), cancellationToken);
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName, ReceiverOptions receiverOptions) where T : class
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
         ArgumentNullException.ThrowIfNull(credential);
@@ -123,21 +135,21 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
-        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions);
+        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
     }
 
     #endregion Receiver TokenCredential
 
     #region Receiver AzureSasCredential
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string topicName,
-        string subscriptionName) where T : class
-    {
-        return CreateTopicReceiverAsync<T>(fullyQualifiedNamespace, credential, topicName, subscriptionName, new ReceiverOptions());
-    }
+        string subscriptionName, CancellationToken cancellationToken = default) where T : class =>
+        CreateTopicReceiverAsync<T>(fullyQualifiedNamespace, credential, topicName, subscriptionName, new ReceiverOptions(), cancellationToken);
 
+    /// <inheritdoc/>
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string topicName,
-        string subscriptionName, ReceiverOptions receiverOptions) where T : class
+        string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
         ArgumentNullException.ThrowIfNull(credential);
@@ -149,13 +161,15 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
-        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions);
+        return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
     }
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName) where T : class
-        => CreateQueueReceiverAsync<T>(fullyQualifiedNamespace, credential, queueName, new ReceiverOptions());
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName, CancellationToken cancellationToken = default) where T : class
+        => CreateQueueReceiverAsync<T>(fullyQualifiedNamespace, credential, queueName, new ReceiverOptions(), cancellationToken);
 
-    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName, ReceiverOptions receiverOptions) where T : class
+    /// <inheritdoc/>
+    public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
         ArgumentNullException.ThrowIfNull(credential);
@@ -166,64 +180,187 @@ public class ServiceBusFactory : IServiceBusFactory
         var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
-        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions);
+        return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
     }
 
     #endregion Receiver AzureSasCredential
 
     #region Sender ConnectionString
 
-    public ISender<T> CreateTopicSenderAsync<T>(string connectionString, string topicName) where T : class
-    {
-        var client = new ServiceBusClient(connectionString);
-        var sender = client.CreateSender(topicName);
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string connectionString, string queueOrTopicName, CancellationToken cancellationToken = default) where T : class =>
+        CreateSenderAsync<T>(connectionString, queueOrTopicName, new SenderOptions(), cancellationToken);
 
-        return new Sender<T>(sender);
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string connectionString, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(connectionString);
+        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+
+        senderOptions ??= new SenderOptions();
+
+        var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
+        {
+            TransportType = senderOptions.ServiceBusTransportType,
+            RetryOptions = new ServiceBusRetryOptions
+            {
+                Mode = senderOptions.Mode,
+                Delay = senderOptions.Delay,
+                MaxRetries = senderOptions.MaxRetries,
+                MaxDelay = senderOptions.MaxDelay,
+            }
+        });
+
+        var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(connectionString) : null;
+
+        return CreateQueueOrTopicSenderAsync<T>(adminClient, client, queueOrTopicName, cancellationToken);
     }
 
     #endregion Sender ConnectionString
 
     #region Sender AzureNamedKeyCredential
 
-    public ISender<T> CreateTopicSenderAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string topicName) where T : class
-    {
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
-        var sender = client.CreateSender(topicName);
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential,
+        string queueOrTopicName, CancellationToken cancellationToken = default) where T : class =>
+        CreateSenderAsync<T>(fullyQualifiedNamespace, credential, queueOrTopicName, new SenderOptions(), cancellationToken);
 
-        return new Sender<T>(sender);
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
+        ArgumentNullException.ThrowIfNull(credential);
+        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+
+        senderOptions ??= new SenderOptions();
+
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, new ServiceBusClientOptions
+        {
+            TransportType = senderOptions.ServiceBusTransportType,
+            RetryOptions = new ServiceBusRetryOptions
+            {
+                Mode = senderOptions.Mode,
+                Delay = senderOptions.Delay,
+                MaxRetries = senderOptions.MaxRetries,
+                MaxDelay = senderOptions.MaxDelay,
+            }
+        });
+
+        var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
+
+        return CreateQueueOrTopicSenderAsync<T>(adminClient, client, queueOrTopicName, cancellationToken);
     }
 
     #endregion Sender AzureNamedKeyCredential
 
     #region Sender TokenCredential
 
-    public ISender<T> CreateTopicSenderAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string topicName) where T : class
-    {
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
-        var sender = client.CreateSender(topicName);
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, TokenCredential credential,
+        string queueOrTopicName, CancellationToken cancellationToken = default) where T : class =>
+        CreateSenderAsync<T>(fullyQualifiedNamespace, credential, queueOrTopicName, new SenderOptions(), cancellationToken);
 
-        return new Sender<T>(sender);
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
+        ArgumentNullException.ThrowIfNull(credential);
+        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+
+        senderOptions ??= new SenderOptions();
+
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, new ServiceBusClientOptions
+        {
+            TransportType = senderOptions.ServiceBusTransportType,
+            RetryOptions = new ServiceBusRetryOptions
+            {
+                Mode = senderOptions.Mode,
+                Delay = senderOptions.Delay,
+                MaxRetries = senderOptions.MaxRetries,
+                MaxDelay = senderOptions.MaxDelay,
+            }
+        });
+
+        var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
+
+        return CreateQueueOrTopicSenderAsync<T>(adminClient, client, queueOrTopicName, cancellationToken);
     }
 
     #endregion Sender TokenCredential
 
     #region Sender AzureSasCredential
 
-    public ISender<T> CreateTopicSenderAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string topicName) where T : class
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential,
+        string queueOrTopicName, CancellationToken cancellationToken = default) where T : class =>
+        CreateSenderAsync<T>(fullyQualifiedNamespace, credential, queueOrTopicName, new SenderOptions(), cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
     {
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
+        ArgumentNullException.ThrowIfNull(credential);
+        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+
+        senderOptions ??= new SenderOptions();
+
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, new ServiceBusClientOptions
+        {
+            TransportType = senderOptions.ServiceBusTransportType,
+            RetryOptions = new ServiceBusRetryOptions
+            {
+                Mode = senderOptions.Mode,
+                Delay = senderOptions.Delay,
+                MaxRetries = senderOptions.MaxRetries,
+                MaxDelay = senderOptions.MaxDelay,
+            }
+        });
+
+        var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
+
+        return CreateQueueOrTopicSenderAsync<T>(adminClient, client, queueOrTopicName, cancellationToken);
+    }
+
+    #endregion Sender AzureSasCredential
+
+    #region Create Senders
+
+    /// <summary>
+    /// Create a Queue/Topic sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="adminClient">The service bus administration client object</param>
+    /// <param name="client">Teh service bus client object</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    private static async Task<ISender<T>> CreateQueueOrTopicSenderAsync<T>(ServiceBusAdministrationClient adminClient, ServiceBusClient client, string topicName, CancellationToken cancellationToken) where T : class
+    {
+        await ConfigureTopicAsync(adminClient, topicName, cancellationToken).ConfigureAwait(false);
         var sender = client.CreateSender(topicName);
 
         return new Sender<T>(sender);
     }
 
-    #endregion Sender AzureSasCredential
+    #endregion Create Senders
 
     #region Create Receivers
 
-    private static async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusAdministrationClient adminClient, ServiceBusClient client, string topicName, string subscriptionName, ReceiverOptions receiverOptions) where T : class
+    /// <summary>
+    /// Create a Topic receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="adminClient">The service bus administration client object</param>
+    /// <param name="client">Teh service bus client object</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="receiverOptions">The options for the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    private static async Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusAdministrationClient adminClient, ServiceBusClient client, string topicName, string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken) where T : class
     {
-        await ConfigureTopicAsync(adminClient, topicName, subscriptionName);
+        await ConfigureTopicAsync(adminClient, topicName, cancellationToken).ConfigureAwait(false);
+        await ConfigureSubscriptionAsync(adminClient, topicName, subscriptionName, cancellationToken).ConfigureAwait(false);
         var receiver = client.CreateProcessor(topicName, subscriptionName, new ServiceBusProcessorOptions
         {
             AutoCompleteMessages = false,
@@ -234,9 +371,19 @@ public class ServiceBusFactory : IServiceBusFactory
         return new Receiver<T>(receiver);
     }
 
-    private static async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusAdministrationClient adminClient, ServiceBusClient client, string queueName, ReceiverOptions receiverOptions) where T : class
+    /// <summary>
+    /// Create a Queue receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="adminClient">The service bus administration client object</param>
+    /// <param name="client">Teh service bus client object</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="receiverOptions">The options for the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    private static async Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusAdministrationClient adminClient, ServiceBusClient client, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken) where T : class
     {
-        await ConfigureQueueAsync(adminClient, queueName);
+        await ConfigureQueueAsync(adminClient, queueName, cancellationToken).ConfigureAwait(false);
         var receiver = client.CreateProcessor(queueName, new ServiceBusProcessorOptions
         {
             AutoCompleteMessages = false,
@@ -251,7 +398,13 @@ public class ServiceBusFactory : IServiceBusFactory
 
     #region Configure Topic/Queues
 
-    private static async Task ConfigureTopicAsync(ServiceBusAdministrationClient adminClient, string topicName, string subscriptionName)
+    /// <summary>
+    /// Configure the creation of a topic
+    /// </summary>
+    /// <param name="adminClient">The service bus administration client object</param>
+    /// <param name="topicName">The name of the topic to subscribe to</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    private static async Task ConfigureTopicAsync(ServiceBusAdministrationClient adminClient, string topicName, CancellationToken cancellationToken)
     {
         if (adminClient == null)
         {
@@ -264,18 +417,39 @@ public class ServiceBusFactory : IServiceBusFactory
             EnablePartitioning = true
         };
 
-        if (!await adminClient.TopicExistsAsync(topicName).ConfigureAwait(false))
+        if (!await adminClient.TopicExistsAsync(topicName, cancellationToken).ConfigureAwait(false))
         {
-            await adminClient.CreateTopicAsync(options);
-        }
-
-        if (!await adminClient.SubscriptionExistsAsync(topicName, subscriptionName))
-        {
-            await adminClient.CreateSubscriptionAsync(topicName, subscriptionName);
+            await adminClient.CreateTopicAsync(options, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static async Task ConfigureQueueAsync(ServiceBusAdministrationClient adminClient, string queueName)
+    /// <summary>
+    /// Configure creation of the Subscription
+    /// </summary>
+    /// <param name="adminClient">The service bus administration client object</param>
+    /// <param name="topicName">The name of the topic to subscribe to</param>
+    /// <param name="subscriptionName">The name of the subscription to create</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    private static async Task ConfigureSubscriptionAsync(ServiceBusAdministrationClient adminClient, string topicName, string subscriptionName, CancellationToken cancellationToken)
+    {
+        if (adminClient == null)
+        {
+            return;
+        }
+
+        if (!await adminClient.SubscriptionExistsAsync(topicName, subscriptionName, cancellationToken).ConfigureAwait(false))
+        {
+            await adminClient.CreateSubscriptionAsync(topicName, subscriptionName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Configure creation of a Queue
+    /// </summary>
+    /// <param name="adminClient">The service bus administration client object</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    private static async Task ConfigureQueueAsync(ServiceBusAdministrationClient adminClient, string queueName, CancellationToken cancellationToken)
     {
         if (adminClient == null)
         {
@@ -288,9 +462,9 @@ public class ServiceBusFactory : IServiceBusFactory
             EnablePartitioning = true
         };
 
-        if (!await adminClient.QueueExistsAsync(queueName).ConfigureAwait(false))
+        if (!await adminClient.QueueExistsAsync(queueName, cancellationToken).ConfigureAwait(false))
         {
-            await adminClient.CreateQueueAsync(options);
+            await adminClient.CreateQueueAsync(options, cancellationToken).ConfigureAwait(false);
         }
     }
 

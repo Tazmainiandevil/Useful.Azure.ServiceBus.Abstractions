@@ -17,20 +17,20 @@ namespace Useful.Azure.ServiceBus.Abstractions.receiver
         }
 
         /// <inheritdoc/>
-        public IObservable<T> Receive(Func<ProcessErrorEventArgs, Task> exceptionHandler)
+        public IObservable<T> Receive(Func<ProcessErrorEventArgs, Task> exceptionHandler, CancellationToken cancellationToken = default)
         {
-            var ob = Observable.Create<T>(async (o, cancellationToken) =>
+            var ob = Observable.Create<T>(async o =>
             {
                 _client.ProcessMessageAsync += async args =>
                 {
                     var data = JsonSerializer.Deserialize<T>(args.Message.Body.ToString());
                     o.OnNext(data);
-                    await args.CompleteMessageAsync(args.Message, cancellationToken);
+                    await args.CompleteMessageAsync(args.Message, cancellationToken).ConfigureAwait(false);
                 };
 
                 _client.ProcessErrorAsync += exceptionHandler;
 
-                await _client.StartProcessingAsync(cancellationToken);
+                await _client.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
 
                 return Disposable.Empty;
             });
@@ -38,6 +38,9 @@ namespace Useful.Azure.ServiceBus.Abstractions.receiver
             return ob;
         }
 
+        /// <summary>
+        /// Dispose of resources asynchronously
+        /// </summary>
         public async ValueTask DisposeAsync()
         {
             if (_client is not null)
