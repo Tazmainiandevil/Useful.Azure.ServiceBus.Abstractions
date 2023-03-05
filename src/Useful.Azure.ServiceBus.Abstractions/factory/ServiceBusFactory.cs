@@ -18,9 +18,9 @@ public class ServiceBusFactory : IServiceBusFactory
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName,
         ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(connectionString);
-        ArgumentNullException.ThrowIfNull(topicName);
-        ArgumentNullException.ThrowIfNull(subscriptionName);
+        ArgumentNullException.ThrowIfNull(connectionString, nameof(connectionString));
+        ArgumentNullException.ThrowIfNull(topicName, nameof(topicName));
+        ArgumentNullException.ThrowIfNull(subscriptionName, nameof(subscriptionName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -37,8 +37,8 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(connectionString);
-        ArgumentNullException.ThrowIfNull(queueName);
+        ArgumentNullException.ThrowIfNull(connectionString, nameof(connectionString));
+        ArgumentNullException.ThrowIfNull(queueName, nameof(queueName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -61,10 +61,10 @@ public class ServiceBusFactory : IServiceBusFactory
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string topicName,
         string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(topicName);
-        ArgumentNullException.ThrowIfNull(subscriptionName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(topicName, nameof(topicName));
+        ArgumentNullException.ThrowIfNull(subscriptionName, nameof(subscriptionName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -81,9 +81,9 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(queueName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(queueName, nameof(queueName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -106,10 +106,10 @@ public class ServiceBusFactory : IServiceBusFactory
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string topicName,
         string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(topicName);
-        ArgumentNullException.ThrowIfNull(subscriptionName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(topicName, nameof(topicName));
+        ArgumentNullException.ThrowIfNull(subscriptionName, nameof(subscriptionName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -126,9 +126,9 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(queueName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(queueName, nameof(queueName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -151,10 +151,10 @@ public class ServiceBusFactory : IServiceBusFactory
     public Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string topicName,
         string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(topicName);
-        ArgumentNullException.ThrowIfNull(subscriptionName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(topicName, nameof(topicName));
+        ArgumentNullException.ThrowIfNull(subscriptionName, nameof(subscriptionName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -171,9 +171,9 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(queueName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(queueName, nameof(queueName));
 
         receiverOptions ??= new ReceiverOptions();
 
@@ -194,8 +194,8 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<ISender<T>> CreateSenderAsync<T>(string connectionString, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(connectionString);
-        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+        ArgumentNullException.ThrowIfNull(connectionString, nameof(connectionString));
+        ArgumentNullException.ThrowIfNull(queueOrTopicName, nameof(queueOrTopicName));
 
         senderOptions ??= new SenderOptions();
 
@@ -228,9 +228,9 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(queueOrTopicName, nameof(queueOrTopicName));
 
         senderOptions ??= new SenderOptions();
 
@@ -263,9 +263,9 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(queueOrTopicName, nameof(queueOrTopicName));
 
         senderOptions ??= new SenderOptions();
 
@@ -298,9 +298,9 @@ public class ServiceBusFactory : IServiceBusFactory
     /// <inheritdoc/>
     public Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class
     {
-        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace);
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(queueOrTopicName);
+        ArgumentNullException.ThrowIfNull(fullyQualifiedNamespace, nameof(fullyQualifiedNamespace));
+        ArgumentNullException.ThrowIfNull(credential, nameof(credential));
+        ArgumentNullException.ThrowIfNull(queueOrTopicName, nameof(queueOrTopicName));
 
         senderOptions ??= new SenderOptions();
 
