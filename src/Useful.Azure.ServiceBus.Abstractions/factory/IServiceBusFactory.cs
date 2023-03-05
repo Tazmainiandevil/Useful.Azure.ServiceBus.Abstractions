@@ -228,7 +228,7 @@ public interface IServiceBusFactory
     /// Create a Queue/Topic Sender
     /// </summary>
     /// <typeparam name="T">The class structure of the expected response</typeparam>
-    /// <param name="connectionString"></param>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
     /// <param name="queueOrTopicName">The queue or topic name</param>
     /// <param name="senderOptions"></param>
     /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
