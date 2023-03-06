@@ -162,11 +162,25 @@ var sender = await factory.CreateSenderAsync<MyMessage>(builder.Configuration["S
 builder.Services.AddSingleton(sender);
 ```
 
+Multiple Senders to different topics
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var factory = new ServiceBusFactory();
+var sender = await factory.CreateSenderAsync<MyMessage>(builder.Configuration["ServiceBusSendConnectionString"], "myTopic");
+var otherSender = await factory.CreateSenderAsync<MyOtherMessage>(builder.Configuration["ServiceBusSendConnectionString"], "myOtherTopic");
+builder.Services.AddSingleton(sender);
+builder.Services.AddSingleton(otherSender);
+```
+
 Example
 
 ```csharp
 await _sender.SendAsJsonAsync(new MyMessage { Name = "Bilbo Baggins" });
 ```
+
 
 or a Receiver
 
@@ -177,6 +191,19 @@ var builder = WebApplication.CreateBuilder(args);
 var factory = new ServiceBusFactory();
 var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(builder.Configuration["ServiceBusReceiveConnectionString"], "myTopic", "mySub");
 builder.Services.AddSingleton(receiver);
+```
+
+Multiple Receivers from different topics
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var factory = new ServiceBusFactory();
+var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(builder.Configuration["ServiceBusReceiveConnectionString"], "myTopic", "mySub");
+var otherReceiver = await factory.CreateTopicReceiverAsync<MyOtherMessage>(builder.Configuration["ServiceBusReceiveConnectionString"], "myOtherTopic", "mySub");
+builder.Services.AddSingleton(receiver);
+builder.Services.AddSingleton(otherReceiver);
 ```
 
 Example
