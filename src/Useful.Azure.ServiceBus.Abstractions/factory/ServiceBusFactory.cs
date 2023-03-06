@@ -199,17 +199,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         senderOptions ??= new SenderOptions();
 
-        var client = new ServiceBusClient(connectionString, new ServiceBusClientOptions
-        {
-            TransportType = senderOptions.ServiceBusTransportType,
-            RetryOptions = new ServiceBusRetryOptions
-            {
-                Mode = senderOptions.Mode,
-                Delay = senderOptions.Delay,
-                MaxRetries = senderOptions.MaxRetries,
-                MaxDelay = senderOptions.MaxDelay,
-            }
-        });
+        var client = new ServiceBusClient(connectionString, CreateServiceBusClientOptions(senderOptions));
 
         var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(connectionString) : null;
 
@@ -234,17 +224,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         senderOptions ??= new SenderOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, new ServiceBusClientOptions
-        {
-            TransportType = senderOptions.ServiceBusTransportType,
-            RetryOptions = new ServiceBusRetryOptions
-            {
-                Mode = senderOptions.Mode,
-                Delay = senderOptions.Delay,
-                MaxRetries = senderOptions.MaxRetries,
-                MaxDelay = senderOptions.MaxDelay,
-            }
-        });
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(senderOptions));
 
         var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
@@ -269,17 +249,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         senderOptions ??= new SenderOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, new ServiceBusClientOptions
-        {
-            TransportType = senderOptions.ServiceBusTransportType,
-            RetryOptions = new ServiceBusRetryOptions
-            {
-                Mode = senderOptions.Mode,
-                Delay = senderOptions.Delay,
-                MaxRetries = senderOptions.MaxRetries,
-                MaxDelay = senderOptions.MaxDelay,
-            }
-        });
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(senderOptions));
 
         var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
@@ -304,7 +274,23 @@ public class ServiceBusFactory : IServiceBusFactory
 
         senderOptions ??= new SenderOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, new ServiceBusClientOptions
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(senderOptions));
+
+        var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
+
+        return CreateQueueOrTopicSenderAsync<T>(adminClient, client, queueOrTopicName, cancellationToken);
+    }
+
+    #endregion Sender AzureSasCredential
+
+    /// <summary>
+    /// Create Service Bus Client Options based on configured sender options
+    /// </summary>
+    /// <param name="senderOptions">The sender options</param>
+    /// <returns>A ServiceBusClientOptions object</returns>
+    private static ServiceBusClientOptions CreateServiceBusClientOptions(SenderOptions senderOptions)
+    {
+        return new ServiceBusClientOptions
         {
             TransportType = senderOptions.ServiceBusTransportType,
             RetryOptions = new ServiceBusRetryOptions
@@ -314,14 +300,8 @@ public class ServiceBusFactory : IServiceBusFactory
                 MaxRetries = senderOptions.MaxRetries,
                 MaxDelay = senderOptions.MaxDelay,
             }
-        });
-
-        var adminClient = senderOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
-
-        return CreateQueueOrTopicSenderAsync<T>(adminClient, client, queueOrTopicName, cancellationToken);
+        };
     }
-
-    #endregion Sender AzureSasCredential
 
     #region Create Senders
 
