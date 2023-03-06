@@ -24,7 +24,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(connectionString);
+        var client = new ServiceBusClient(connectionString, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(connectionString) : null;
 
         return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
@@ -42,7 +42,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(connectionString);
+        var client = new ServiceBusClient(connectionString, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(connectionString) : null;
 
         return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
@@ -68,7 +68,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
         return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
@@ -87,7 +87,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
         return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
@@ -113,7 +113,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
         return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
@@ -132,7 +132,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
         return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
@@ -158,7 +158,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
         return CreateTopicReceiverAsync<T>(adminClient, client, topicName, subscriptionName, receiverOptions, cancellationToken);
@@ -177,7 +177,7 @@ public class ServiceBusFactory : IServiceBusFactory
 
         receiverOptions ??= new ReceiverOptions();
 
-        var client = new ServiceBusClient(fullyQualifiedNamespace, credential);
+        var client = new ServiceBusClient(fullyQualifiedNamespace, credential, CreateServiceBusClientOptions(receiverOptions));
         var adminClient = receiverOptions.ConnectionCanCreateTopicOrQueue ? new ServiceBusAdministrationClient(fullyQualifiedNamespace, credential) : null;
 
         return CreateQueueReceiverAsync<T>(adminClient, client, queueName, receiverOptions, cancellationToken);
@@ -299,6 +299,21 @@ public class ServiceBusFactory : IServiceBusFactory
                 Delay = senderOptions.Delay,
                 MaxRetries = senderOptions.MaxRetries,
                 MaxDelay = senderOptions.MaxDelay,
+            }
+        };
+    }
+
+    private static ServiceBusClientOptions CreateServiceBusClientOptions(ReceiverOptions receiverOptions)
+    {
+        return new ServiceBusClientOptions
+        {
+            TransportType = receiverOptions.ServiceBusTransportType,
+            RetryOptions = new ServiceBusRetryOptions
+            {
+                Mode = receiverOptions.Mode,
+                Delay = receiverOptions.Delay,
+                MaxRetries = receiverOptions.MaxRetries,
+                MaxDelay = receiverOptions.MaxDelay,
             }
         };
     }
