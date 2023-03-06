@@ -11,7 +11,7 @@
     <description>$description$</description>
     <tags>tazmainiandevil useful.azure.servicebus servicebus service bus azure</tags>
     <releaseNotes>$releaseNotes$</releaseNotes>
-    <readme>README.md</readme>
+    <readme>docs\README.md</readme>
     <dependencies>
       <dependency id="Azure.Messaging.ServiceBus" version="7.12.0" />
       <dependency id="System.Reactive" version="5.0.0" />
