@@ -1,150 +1,237 @@
 # Useful.Azure.ServiceBus.Abstractions
 
-Azure Service Bus Wrapper in C# to help manage and use the Service Bus for sending messages as JSON. Uses the .NET Standard 2.0 version of the service bus libraries.
+The purpose of this project is to to provide a wrapper for Azure Service Bus to send messages as JSON and abstract some of the configuration away. This also aids in unit testing by providing interfaces for the Sender and Receiver.
+
+Supported .NET Frameworks - .NET 6 and .NET 7
 
 <a href="https://badge.fury.io/nu/Useful.Azure.ServiceBus.Abstractions"><img src="https://badge.fury.io/nu/Useful.Azure.ServiceBus.Abstractions.svg" alt="NuGet version" height="18"></a>
 
-## Usage
+## Configuration
 
-To create a topic/queue sender or receiver, create an instance of the factory and then create a sender or receiver from that.
+Add the packages for your app
 
-Each of the factory methods support creation of the queue or topic as well as transport type, receive mode and retry policy.
+__NOTE__: Azure.Identity and Microsoft.Extensions.Azure are used for Managed Identity connections
 
-__NOTE__ : In order to use the create of the queue or topic the connection string must have mange rights.
-
-### Topics
-
-#### Basic Topic Sender
-
-```csharp
-var factory = new ServiceBusFactory();
-var sender = await factory.CreateTopicSenderAsync<MyMessage>(ServiceBusConnectionString, "myTopic").ConfigureAwait(false);
-
-await sender.SendAsJsonAsync(mymessage).ConfigureAwait(false);
+```PowerShell
+dotnet add package Azure.Identity
+dotnet add package Microsoft.Extensions.Azure
+dotnet add package Useful.Azure.ServiceBus.Abstractions
 ```
 
-#### Basic Topic Receiver
+## Basic Console App Usage
+
+
+### Sending
+
+Create a message structure e.g.
+
+```csharp
+public record MyMessage
+{
+    public string Name { get; init; }
+}
+```
+
+Create an instance of the ServiceBusFactory e.g.
 
 ```csharp
 var factory = new ServiceBusFactory();
-var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(ServiceBusConnectionString, "myTopic", "mySubscription").ConfigureAwait(false);
+```
 
-// The receive method takes an exception func<> to provide feedback and returns an IObservable to get messages
-var observer = receiver.Receive(exception =>
+Create a Sender with a connection string for the Service Bus e.g.
+
+```csharp
+var sender = await factory.CreateSenderAsync<MyMessage>(ServiceBusConnectionString, "myTopic");
+```
+
+or using Managed Identity
+
+```csharp
+const string fullyQualifiedNamespace = "<your namespace>.servicebus.windows.net";
+var sender = await factory.CreateSenderAsync<MyMessage>(fullyQualifiedNamespace, new DefaultAzureCredential(), "myTopic");
+```
+
+Then use the SendAsJsonAsync method to send to the Service Bus
+
+```csharp
+await sender.SendAsJsonAsync(new MyMessage { Name = "Bilbo Baggins" });
+```
+
+When creating the Sender there is also a number of options that can be configured e.g.
+
+```csharp
+var sender = await factory.CreateSenderAsync<MyMessage>(fullyQualifiedNamespace, new DefaultAzureCredential(), "myTopic", new SenderOptions { ConnectionCanCreateTopicOrQueue = true } );
+```
+
+The defaults for the SenderOptions are:
+
+```csharp
+public record SenderOptions
 {
-    Console.WriteLine(exception.Exception.Message);
+    public bool ConnectionCanCreateTopicOrQueue { get; set; } = false;
+    public ServiceBusTransportType ServiceBusTransportType { get; set; } = ServiceBusTransportType.AmqpTcp;
+    public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(0.8);
+    public TimeSpan MaxDelay { get; set; } = TimeSpan.FromMinutes(1);
+    public int MaxRetries { get; set; } = 3;
+    public ServiceBusRetryMode Mode { get; set; } = ServiceBusRetryMode.Exponential;
+}
+```
+
+### Receiving
+
+Create a Receiver with a connection string for the Service Bus e.g.
+
+```csharp
+var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(ServiceBusConnectionString, "myTopic", "mySub");
+```
+
+or using Managed Identity
+
+```csharp
+var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(fullyQualifiedNamespace, new DefaultAzureCredential(), "myTopic", "mySub");
+```
+
+Then to listen for incoming messages e.g.
+
+__NOTE__ : The receive method takes an exception func<> to provide feedback and returns an IObservable to get messages
+
+```csharp
+var observer = receiver.Receive(args =>
+{
+    Console.WriteLine(args.Exception.Message);
     return Task.CompletedTask;
 });
+```
 
+And finally subscribe to receive the messages e.g.
+
+```csharp
 observer.Subscribe(x => Console.WriteLine($"From Topic {x}"));
 ```
 
-#### AMPQ Websocket Topic Sender
+__TIP__: Running in a console app you'll need to keep it open, so add a ReadKey at the bottom
 
 ```csharp
-var builder = new ServiceBusConnectionStringBuilder(serviceBusConnectionString);
-builder.EntityPath = "mytopic";
-builder.TransportType = TransportType.AmqpWebSockets;
-
-var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(builder.SasKeyName, builder.SasKey);
-
-var factory = new ServiceBusFactory();
-var sender = await factory.CreateTopicSenderAsync<MyMessage>(builder, tokenProvider).ConfigureAwait(false);
-
-await sender.SendAsJsonAsync(mymessage).ConfigureAwait(false);
+Console.ReadKey();
 ```
 
-#### AMPQ Websocket Topic Receiver
+When creating the Receiver there is also a number of options that can be configured e.g.
 
 ```csharp
-var builder = new ServiceBusConnectionStringBuilder(serviceBusConnectionString);
-builder.EntityPath = "mytopic";
-builder.TransportType = TransportType.AmqpWebSockets;
+var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(fullyQualifiedNamespace, new DefaultAzureCredential(), "myTopic", "mySub", new ReceiverOptions { ConnectionCanCreateTopicOrQueue = true });
+```
 
-var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(builder.SasKeyName, builder.SasKey);
+The defaults for the ReceiverOptions are:
 
-var factory = new ServiceBusFactory();
-var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(builder, tokenProvider, "mySubscription").ConfigureAwait(false);
-
-// The receive method takes an exception func<> to provide feedback and returns an IObservable to get messages
-var observer = receiver.Receive(exception =>
+```csharp
+public record ReceiverOptions
 {
-    Console.WriteLine(exception.Exception.Message);
+    public bool ConnectionCanCreateTopicOrQueue { get; set; } = false;
+    public int MaxConcurrentCalls { get; set; } = 10;
+    public ServiceBusReceiveMode ReceiveMode { get; set; } = ServiceBusReceiveMode.PeekLock;
+}
+```
+
+## Basic Injection Usage
+
+Inject the Factory in program.cs e.g.
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddSingleton<IServiceBusFactory, ServiceBusFactory>();
+
+```
+
+Example
+
+```csharp
+await using var sender = await _serviceBusFactory.CreateSenderAsync<MyMessage>(SendConnectionString, "myTopic");
+await sender.SendAsJsonAsync(new MyMessage { Name = "Bilbo Baggins" });
+```
+
+or a Sender e.g.
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var factory = new ServiceBusFactory();
+var sender = await factory.CreateSenderAsync<MyMessage>(builder.Configuration["ServiceBusSendConnectionString"], "myTopic");
+builder.Services.AddSingleton(sender);
+```
+
+Multiple Senders to different topics
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var factory = new ServiceBusFactory();
+var sender = await factory.CreateSenderAsync<MyMessage>(builder.Configuration["ServiceBusSendConnectionString"], "myTopic");
+var otherSender = await factory.CreateSenderAsync<MyOtherMessage>(builder.Configuration["ServiceBusSendConnectionString"], "myOtherTopic");
+builder.Services.AddSingleton(sender);
+builder.Services.AddSingleton(otherSender);
+```
+
+Example
+
+```csharp
+await _sender.SendAsJsonAsync(new MyMessage { Name = "Bilbo Baggins" });
+```
+
+
+or a Receiver
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var factory = new ServiceBusFactory();
+var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(builder.Configuration["ServiceBusReceiveConnectionString"], "myTopic", "mySub");
+builder.Services.AddSingleton(receiver);
+```
+
+Multiple Receivers from different topics
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var factory = new ServiceBusFactory();
+var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(builder.Configuration["ServiceBusReceiveConnectionString"], "myTopic", "mySub");
+var otherReceiver = await factory.CreateTopicReceiverAsync<MyOtherMessage>(builder.Configuration["ServiceBusReceiveConnectionString"], "myOtherTopic", "mySub");
+builder.Services.AddSingleton(receiver);
+builder.Services.AddSingleton(otherReceiver);
+```
+
+Example
+
+```csharp
+var observer = receiver.Receive(args =>
+{
+    Console.WriteLine(args.Exception.Message);
     return Task.CompletedTask;
 });
 
-observer.Subscribe(x => Console.WriteLine($"From Topic {x}"));
+observer.Subscribe(x => Console.WriteLine($"From Topic {x.Name}"));
 ```
 
-### Queues
-
-#### Basic Queue Sender
+Example with Methods
 
 ```csharp
-var factory = new ServiceBusFactory();
-var sender = await factory.CreateQueueSenderAsync<string>(ServiceBusConnectionString, "myQueue").ConfigureAwait(false);
+var observer = receiver.Receive(ExceptionHandler);
+observer.Subscribe(IncomingMessage);
 
-await sender.SendAsJsonAsync(mymessage).ConfigureAwait(false);
-```
-
-#### Basic Queue Receiver
-
-```csharp
-var factory = new ServiceBusFactory();
-var receiver = await factory.CreateQueueReceiverAsync<string>(ServiceBusConnectionString, "myQueue").ConfigureAwait(false);
-
-// The receive method takes an exception func<> to provide feedback and returns an IObservable to get messages
-var observer = receiver.Receive(exception =>
+private void IncomingMessage(MyMessage message)
 {
-    Console.WriteLine(exception.Exception.Message);
-    return Task.CompletedTask;
-});
+    Console.WriteLine($"From Topic {message.Name}")
+}
 
-observer.Subscribe(x => Console.WriteLine($"From Queue {x}"));
-```
-
-### Sender
-
-The sender has a few methods to send the messages as JSON and supports:
-
-- Scheduled Enqueue Time UTC
-- Time To Live
-- Sending lists of messages
-
-#### Sending with Time to Live
-
-```csharp
-var factory = new ServiceBusFactory();
-var sender = await factory.CreateTopicSenderAsync<MyMessage>(ServiceBusConnectionString, "myTopic").ConfigureAwait(false);
-
-await sender.SendAsJsonAsync(mymessage, TimeSpan.FromMinutes(10)).ConfigureAwait(false);
-```
-
-#### Sending with Scheduled Enqueue Time UTC
-
-```csharp
-var factory = new ServiceBusFactory();
-var sender = await factory.CreateTopicSenderAsync<MyMessage>(ServiceBusConnectionString, "myTopic").ConfigureAwait(false);
-
-var enqueue = DateTime.UtcNow + TimeSpan.FromDays(1);
-await sender.SendAsJsonAsync(mymessage, enqueue).ConfigureAwait(false);
-```
-
-### Receiver
-
-The receiver has a single receive method that takes an exception handler func and can override the maxConcurrentCalls (default is 1).
-
-```csharp
-var factory = new ServiceBusFactory();
-var receiver = await factory.CreateTopicReceiverAsync<MyMessage>(ServiceBusConnectionString, "myTopic", "mySubscription").ConfigureAwait(false);
-
-var maxConcurrentCalls = 10;
-// The receive method takes an exception func<> to provide feedback and returns an IObservable to get messages
-var observer = receiver.Receive(exception =>
+private Task ExceptionHandler(ProcessErrorEventArgs args)
 {
-    Console.WriteLine(exception.Exception.Message);
+    Console.WriteLine(args.Exception.Message);
     return Task.CompletedTask;
-}, maxConcurrentCalls);
-
-observer.Subscribe(x => Console.WriteLine($"From Topic {x}"));
+}
 ```

@@ -1,191 +1,320 @@
-﻿using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Primitives;
-using System.Threading.Tasks;
+﻿using Azure;
+using Azure.Core;
 using Useful.Azure.ServiceBus.Abstractions.receiver;
 using Useful.Azure.ServiceBus.Abstractions.sender;
 
-namespace Useful.Azure.ServiceBus.Abstractions.factory
+namespace Useful.Azure.ServiceBus.Abstractions.factory;
+
+public interface IServiceBusFactory
 {
-    public interface IServiceBusFactory
-    {
-        #region Senders
+    #region Receiver ConnectionString
 
-        /// <summary>
-        /// Create a message topic sender
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="topicName">The name of the topic</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message topic sender
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="topicName">The name of the topic</param>
-        /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateTopicSenderAsync<T>(string connectionString, string topicName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="receiverOptions">The options to configure the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message topic sender
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateTopicSenderAsync<T>(ServiceBusConnectionStringBuilder builder, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message topic sender
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="tokenProvider">The token provider</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateTopicSenderAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="receiverOptions">The options to configure the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message queue sender
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="queueName">The name of the queue</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateQueue">A boolean denoting if queue should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    #endregion Receiver ConnectionString
 
-        /// <summary>
-        /// Create a message queue sender
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="queueName">The name of the queue</param>
-        /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateQueueSenderAsync<T>(string connectionString, string queueName, TransportType transportType, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    #region Receiver AzureNamedKeyCredential
 
-        /// <summary>
-        /// Create a message queue sender
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="retryPolicy"></param>
-        /// <param name="canCreateQueue"></param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateQueueSenderAsync<T>(ServiceBusConnectionStringBuilder builder, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureNamedKeyCredential to use for authorization.  Access controls may be specified by the Service Bus namespace.</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
 
-        /// <summary>
-        /// Create a message queue sender
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="tokenProvider">The token provider</param>
-        /// <param name="retryPolicy"></param>
-        /// <param name="canCreateQueue"></param>
-        /// <returns>A service bus sender</returns>
-        Task<ISender<T>> CreateQueueSenderAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string topicName, string subscriptionName, CancellationToken cancellationToken = default) where T : class;
 
-        #endregion Senders
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureNamedKeyCredential to use for authorization.  Access controls may be specified by the Service Bus namespace.</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="receiverOptions"></param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string topicName, string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
 
-        #region Receivers
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureNamedKeyCredential to use for authorization.  Access controls may be specified by the Service Bus namespace.</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message topic receiver
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="topicName">The name of the topic</param>
-        /// <param name="subscriptionName">The name of the subscription</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureNamedKeyCredential to use for authorization.  Access controls may be specified by the Service Bus namespace.</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="receiverOptions">The options to configure the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message topic receiver
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="topicName">The name of the topic</param>
-        /// <param name="subscriptionName">The name of the subscription</param>
-        /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string connectionString, string topicName, string subscriptionName, TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    #endregion Receiver AzureNamedKeyCredential
 
-        /// <summary>
-        /// Create a message topic receiver
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="subscriptionName">The name of the subscription</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
-        
-        /// <summary>
-        /// Create a message topic receiver
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="tokenProvider"></param>
-        /// <param name="subscriptionName">The name of the subscription</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateTopic">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateTopicReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, string subscriptionName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateTopic = false) where T : class;
+    #region Receiver TokenCredential
 
-        /// <summary>
-        /// Create a message queue receiver
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="queueName">The name of the queue</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The Azure managed identity credential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string topicName, string subscriptionName, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message queue receiver
-        /// </summary>
-        /// <param name="connectionString">The connection string</param>
-        /// <param name="queueName">The name of the queue</param>
-        /// <param name="transportType">The transport type e.g. AMQP, AMQP WebSockets</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateQueue">A boolean denoting if queueName should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string connectionString, string queueName, TransportType transportType, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The Azure managed identity credential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="receiverOptions"></param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string topicName, string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message queue receiver
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The Azure managed identity credential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName, CancellationToken cancellationToken = default) where T : class;
 
-        /// <summary>
-        /// Create a message queue receiver
-        /// </summary>
-        /// <param name="builder">The connection string builder</param>
-        /// <param name="tokenProvider"></param>
-        /// <param name="receiveMode">The mode to receive messages default is PeekLock</param>
-        /// <param name="retryPolicy">The retry policy</param>
-        /// <param name="canCreateQueue">A boolean denoting if topic should be created if it does not exist. NOTE: Manage rights required</param>
-        /// <returns>A service bus receiver</returns>
-        Task<IReceiver<T>> CreateQueueReceiverAsync<T>(ServiceBusConnectionStringBuilder builder, ITokenProvider tokenProvider, ReceiveMode receiveMode = ReceiveMode.PeekLock, RetryPolicy retryPolicy = null, bool canCreateQueue = false) where T : class;
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The Azure managed identity credential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="receiverOptions">The options to configure the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
 
-        #endregion Receivers
-    }
+    #endregion Receiver TokenCredential
+
+    #region Receiver AzureSasCredential
+
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureSasCredential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string topicName, string subscriptionName, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Topic Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureSasCredential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="topicName">The name of the topic</param>
+    /// <param name="subscriptionName">The name of the subscription</param>
+    /// <param name="receiverOptions"></param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateTopicReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string topicName, string subscriptionName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureSasCredential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Queue Receiver
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureSasCredential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueName">The name of the queue</param>
+    /// <param name="receiverOptions">The options to configure the receiver</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Receiver</returns>
+    Task<IReceiver<T>> CreateQueueReceiverAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueName, ReceiverOptions receiverOptions, CancellationToken cancellationToken = default) where T : class;
+
+    #endregion Receiver AzureSasCredential
+
+    #region Sender ConnectionString
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string connectionString, string queueOrTopicName, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the expected response</typeparam>
+    /// <param name="connectionString">The connection string for connecting to the service bus</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="senderOptions"></param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string connectionString, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class;
+
+    #endregion Sender ConnectionString
+
+    #region Sender AzureNamedKeyCredential
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureNamedKeyCredential to use for authorization.  Access controls may be specified by the Service Bus namespace.</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueOrTopicName, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureNamedKeyCredential to use for authorization.  Access controls may be specified by the Service Bus namespace.</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="senderOptions"></param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureNamedKeyCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class;
+
+    #endregion Sender AzureNamedKeyCredential
+
+    #region Sender TokenCredential
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The Azure managed identity credential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueOrTopicName, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The Azure managed identity credential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="senderOptions"></param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, TokenCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class;
+
+    #endregion Sender TokenCredential
+
+    #region Sender AzureSasCredential
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureSasCredential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueOrTopicName, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Create a Queue/Topic Sender
+    /// </summary>
+    /// <typeparam name="T">The class structure of the message to send</typeparam>
+    /// <param name="fullyQualifiedNamespace">The fully qualified Service Bus namespace to connect to</param>
+    /// <param name="credential">The AzureSasCredential to use for authorization. Access controls may be specified by the Service Bus namespace</param>
+    /// <param name="queueOrTopicName">The queue or topic name</param>
+    /// <param name="senderOptions">The options for the Sender</param>
+    /// <param name="cancellationToken">Cancellation Token instance to signal the request to cancel the operation</param>
+    /// <returns>An instance of the Sender</returns>
+    Task<ISender<T>> CreateSenderAsync<T>(string fullyQualifiedNamespace, AzureSasCredential credential, string queueOrTopicName, SenderOptions senderOptions, CancellationToken cancellationToken = default) where T : class;
+
+    #endregion Sender AzureSasCredential
 }
